@@ -107,11 +107,17 @@ int main()
 
     // first triangle
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f};
+        0.5f, 0.5f, 0.0f,   // top right
+        0.5f, -0.5f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f, // bottom left
+        -0.5f, 0.5f, 0.0f   // top left
+    };
+    unsigned int indices[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+    };
 
-    // generate a Vertex Array Object (VAO)
+    // generate a VBO
     unsigned int VBO;
     glGenBuffers(1, &VBO);
 
@@ -120,14 +126,22 @@ int main()
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+
+    // bind VAO first
+    glBindVertexArray(VAO); // not necessary because we have only one VAO
+
     // bind the VBO to the current bound buffer target
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
     // copy the vertex data into the VBO
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     // GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times.
     // GL_STATIC_DRAW: the data is set only once and used many times.
     // GL_DYNAMIC_DRAW: the data is changed a lot and used many times
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // specification a openGL dela forme qu'on les vertex qu'on lui passe
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
@@ -145,7 +159,8 @@ int main()
 
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(window);
